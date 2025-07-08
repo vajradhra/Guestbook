@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言板 - Guestbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2f7wSDWd5-pQDZhgnymhc0kHqoUB4amU",
+            authDomain: "guestbook-4c514.firebaseapp.com",
+            databaseURL: "https://guestbook-4c514-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "guestbook-4c514",
+            storageBucket: "guestbook-4c514.firebasestorage.app",
+            messagingSenderId: "781040453565",
+            appId: "1:781040453565:web:053c7185d83d0ec4daf4d4",
+            measurementId: "G-6NKSQ81GV7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Make Firebase available globally
+        window.firebase = { database, ref, push, onValue, remove };
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 min-h-screen font-inter">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 標題區域 -->
+        <header class="text-center mb-12">
+            <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                <h1 class="text-5xl font-bold text-gray-800 mb-4 flex items-center justify-center gap-4">
+                    <i class="fas fa-book-open text-purple-600 text-4xl"></i>
+                    留言板
+                </h1>
+                <p class="text-xl text-gray-600">留下你的足跡，分享你的想法</p>
+                <div class="mt-4 text-sm text-gray-500">
+                    <i class="fas fa-database text-green-500"></i>
+                    資料已連接 Firebase 即時資料庫
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要內容區域 -->
+        <main class="grid lg:grid-cols-2 gap-8 mb-12">
+            <!-- 留言表單 -->
+            <section class="order-1 lg:order-1">
+                <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20 sticky top-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
+                        <i class="fas fa-pen text-purple-600"></i>
+                        寫留言
+                    </h2>
+                    <form id="guestbookForm" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="name" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-user text-purple-600"></i>
+                                姓名
+                            </label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-300 bg-white/80"
+                                placeholder="請輸入你的姓名"
+                                required
+                            >
+                            <div class="char-counter text-right text-sm text-gray-500 hidden"></div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="content" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-comment text-purple-600"></i>
+                                留言內容
+                            </label>
+                            <textarea 
+                                id="content" 
+                                name="content" 
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-300 bg-white/80 resize-vertical min-h-[120px]"
+                                placeholder="寫下你想說的話..."
+                                rows="4"
+                                required
+                            ></textarea>
+                            <div class="char-counter text-right text-sm text-gray-500 hidden"></div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                            <i class="fas fa-paper-plane"></i>
+                            發送留言
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 留言列表 -->
+            <section class="order-2 lg:order-2">
+                <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
+                        <i class="fas fa-comments text-purple-600"></i>
+                        最新留言
+                    </h2>
+                    <div id="messagesList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                        <!-- 載入中提示 -->
+                        <div id="loadingMessage" class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                            <p class="mt-2 text-gray-500">載入留言中...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 頁腳 -->
+        <footer class="text-center">
+            <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-white/20">
+                <p class="text-gray-700 mb-2">&copy; 2024 留言板. 用 ❤️ 製作</p>
+                <p class="text-sm text-gray-500 italic">留言資料儲存於 Firebase 即時資料庫</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 成功提示 -->
+    <div id="successToast" class="fixed top-6 right-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex items-center gap-3">
+        <i class="fas fa-check-circle text-xl"></i>
+        <span>留言發送成功！</span>
+    </div>
+
+    <!-- 錯誤提示 -->
+    <div id="errorToast" class="fixed top-6 right-6 bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex items-center gap-3">
+        <i class="fas fa-exclamation-circle text-xl"></i>
+        <span>請填寫完整資訊</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
